@@ -1,33 +1,46 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
+const express = require("express");
+const fetch = require("node-fetch");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
 app.post("/chat", async (req, res) => {
-  try {
-    const userMessage = req.body.messages[0].content;
+    try {
+        const userMessage = req.body.message;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer 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"
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: userMessage }]
-      })
-    });
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer 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",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "user", content: userMessage }
+                ]
+            })
+        });
 
-    const data = await response.json();
-    res.json(data);
+        const data = await response.json();
 
-  } catch (error) {
-    res.json({ error: error.message });
-  }
+        console.log(data); // 👈 IMPORTANT (debug)
+
+        if (!data.choices) {
+            return res.json({ error: "No response from AI", full: data });
+        }
+
+        res.json({
+            reply: data.choices[0].message.content
+        });
+
+    } catch (err) {
+        res.json({ error: err.message });
+    }
 });
 
-app.listen(10000);
+app.get("/", (req, res) => {
+    res.send("Server running");
+});
+
+app.listen(3000, () => console.log("Server running"));
