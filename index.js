@@ -4,9 +4,9 @@ const fetch = require("node-fetch");
 const app = express();
 app.use(express.json());
 
-// Home route
+// VERY IMPORTANT (health check)
 app.get("/", (req, res) => {
-  res.send("Server running ✅");
+  res.send("OK");
 });
 
 // Chat route
@@ -30,17 +30,18 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    const reply = data.choices?.[0]?.message?.content || "No reply";
+    res.json({
+      reply: data.choices?.[0]?.message?.content || "No reply"
+    });
 
-    res.json({ reply });
-
-  } catch (error) {
-    res.json({ error: error.message });
+  } catch (err) {
+    res.json({ error: err.message });
   }
 });
 
-// Port
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+// IMPORTANT: Render PORT
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port " + PORT);
 });
